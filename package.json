@@ -1,0 +1,12 @@
+{
+  "name": "gradient-descent",
+  "version": "1.0.0",
+  "description": "Simple implementation of graditent descent by myself own.",
+  "main": "fit.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "type": "module",
+  "author": "jhj",
+  "license": "ISC"
+}
