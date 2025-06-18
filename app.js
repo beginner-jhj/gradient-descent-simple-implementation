@@ -1,9 +1,32 @@
 import { gradient } from "./gradient-descent.js";
 import { computeCost } from "./mse.js";
-import { getData } from "./get-data.js";
+import { getData, getColumns } from "./get-data.js";
 import { normalizeFeatures } from "./normalize.js";
+import { predict } from "./predict.js";
 
 let chart;
+let trainedW = [];
+let trainedB = 0;
+let featureMins = [];
+let featureMaxs = [];
+let featureNames = [];
+
+async function displayColumns() {
+  const datasetKey = document.getElementById("dataset-select").value;
+  try {
+    const columns = await getColumns(datasetKey);
+    featureNames = columns.slice(0, -1);
+    document.getElementById("columns-display").textContent =
+      "Columns: " + columns.join(", ");
+    document.getElementById("feature-list").textContent =
+      "Features: " + featureNames.join(", ");
+  } catch (err) {
+    console.error("Error loading columns", err);
+    document.getElementById("columns-display").textContent =
+      "Failed to load columns";
+  }
+}
+
 
 async function train() {
   const learningRate = parseFloat(
@@ -12,7 +35,7 @@ async function train() {
   const iterations = parseInt(document.getElementById("iterations").value, 10);
   const datasetKey = document.getElementById("dataset-select").value;
 
-  const dataSet = await getData(datasetKey);
+  const { data: dataSet, headers } = await getData(datasetKey);
 
   if (!dataSet || dataSet.length === 0) {
     console.error("Dataset is empty or not loaded properly.");
@@ -21,6 +44,10 @@ async function train() {
     );
     return;
   }
+
+  featureNames = headers.slice(0, -1);
+  document.getElementById("feature-list").textContent =
+    "Features: " + featureNames.join(", ");
 
   console.log("Training with dataset:", datasetKey);
   console.log("DataSet:", dataSet);
@@ -31,8 +58,10 @@ async function train() {
   const n = X_values[0].length; // Number of features
 
   const filteredX = X_values.filter((x) => x.length === n);
-  const normalizedX = normalizeFeatures(filteredX);
+  const { normalized: normalizedX, mins, maxs } = normalizeFeatures(filteredX);
   console.log("Normalized X:", normalizedX);
+  featureMins = mins;
+  featureMaxs = maxs;
 
   let w = new Array(n).fill(0); // Initialize weights to zero
   let b = 0;
@@ -48,7 +77,10 @@ async function train() {
     b -= learningRate * dj_db;
   }
 
+  trainedW = w;
+  trainedB = b;
   updateChart(costs);
+  document.getElementById("test-section").style.display = "block";
 }
 
 function updateChart(costHistory) {
@@ -73,3 +105,23 @@ function updateChart(costHistory) {
 }
 
 document.getElementById("runButton").addEventListener("click", train);
+document.getElementById("dataset-select").addEventListener("change", displayColumns);
+displayColumns();
+
+function normalizeInput(values) {
+  return values.map((v, i) => (v - featureMins[i]) / (featureMaxs[i] - featureMins[i]));
+}
+
+function testModel() {
+  const rawInput = document.getElementById("test-input").value;
+  const values = rawInput.split(",").map(Number);
+  if (values.length !== trainedW.length) {
+    alert(`Please enter ${trainedW.length} values.`);
+    return;
+  }
+  const normalized = normalizeInput(values);
+  const prediction = predict(normalized, trainedW, trainedB);
+  document.getElementById("predictionOutput").textContent = `Prediction: ${prediction.toFixed(2)}`;
+}
+
+document.getElementById("testButton").addEventListener("click", testModel);

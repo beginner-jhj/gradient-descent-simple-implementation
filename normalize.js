@@ -10,7 +10,9 @@ export function normalizeFeatures(X) {
     }
   }
 
-  return X.map((row) =>
+  const normalized = X.map((row) =>
     row.map((val, j) => (val - mins[j]) / (maxs[j] - mins[j]))
   );
+
+  return { normalized, mins, maxs };
 }

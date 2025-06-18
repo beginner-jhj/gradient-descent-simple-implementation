@@ -30,7 +30,17 @@
     <label>Iterations: <input id="iterations" type="number" value="100"></label>
     <button id="runButton">Run</button>
   </div>
+  <p id="columns-display"></p>
   <canvas id="costChart" width="600" height="400"></canvas>
+  <section id="test-section" style="display:none">
+    <h2>Test the Model</h2>
+    <p id="feature-list"></p>
+    <label>Input features (comma separated):
+      <input id="test-input" type="text" />
+    </label>
+    <button id="testButton">Predict</button>
+    <p id="predictionOutput"></p>
+  </section>
   <script src="./node_modules/chart.js/dist/chart.umd.min.js"></script>
   <script type="module" src="./app.js"></script>
   <script type="module" src="./get-data.js"></script>
