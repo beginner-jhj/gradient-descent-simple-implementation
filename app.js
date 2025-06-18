@@ -1,65 +1,66 @@
-import Chart from './node_modules/chart.js/dist/chart.umd.js';
-import { gradient } from './gradient-descent.js';
-import { cost } from './mse.js';
-
-// Example datasets for different linear regression scenarios
-const datasets = {
-  study: {
-    x: [1, 2, 3, 4, 5, 6],
-    y: [50, 55, 65, 70, 75, 80],
-  },
-  experience: {
-    x: [1, 3, 5, 7, 9],
-    y: [35, 50, 65, 80, 95],
-  },
-  housing: {
-    x: [500, 750, 1000, 1250, 1500],
-    y: [150000, 200000, 240000, 280000, 330000],
-  },
-};
-
-let X_values = datasets.study.x;
-let y_values = datasets.study.y;
+import { gradient } from "./gradient-descent.js";
+import { computeCost } from "./mse.js";
+import { getData } from "./get-data.js";
+import { normalizeFeatures } from "./normalize.js";
 
 let chart;
 
-function updateDataInfo() {
-  const info = X_values.map((x, i) => `${x}\t${y_values[i]}`).join('\n');
-  document.getElementById('data-info').textContent = `x\ty\n${info}`;
-}
+async function train() {
+  const learningRate = parseFloat(
+    document.getElementById("learning-rate").value
+  );
+  const iterations = parseInt(document.getElementById("iterations").value, 10);
+  const datasetKey = document.getElementById("dataset-select").value;
 
-function runGradientDescent() {
-  const alpha = parseFloat(document.getElementById('learning-rate').value);
-  const iterations = parseInt(document.getElementById('iterations').value, 10);
-  const datasetKey = document.getElementById('dataset-select').value;
-  ({ x: X_values, y: y_values } = datasets[datasetKey]);
-  updateDataInfo();
+  const dataSet = await getData(datasetKey);
 
-  let w = 0;
+  if (!dataSet || dataSet.length === 0) {
+    console.error("Dataset is empty or not loaded properly.");
+    alert(
+      "Dataset is empty or not loaded properly. Please select a valid dataset."
+    );
+    return;
+  }
+
+  console.log("Training with dataset:", datasetKey);
+  console.log("DataSet:", dataSet);
+
+  const X_values = dataSet.map((row) => row.slice(0, -1)); // All columns except the last
+  const y_values = dataSet.map((row) => row[row.length - 1]); // Last column as target values
+
+  const n = X_values[0].length; // Number of features
+
+  const filteredX = X_values.filter((x) => x.length === n);
+  const normalizedX = normalizeFeatures(filteredX);
+  console.log("Normalized X:", normalizedX);
+
+  let w = new Array(n).fill(0); // Initialize weights to zero
   let b = 0;
   const costs = [];
 
   for (let i = 0; i < iterations; i++) {
-    const j = cost(X_values, y_values, w, b);
-    costs.push(j);
-    const [dj_dw, dj_db] = gradient(X_values, y_values, w, b);
-    w -= alpha * dj_dw;
-    b -= alpha * dj_db;
+    const cost = computeCost(normalizedX, y_values, w, b);
+    costs.push(cost);
+    const [dj_dw, dj_db] = gradient(normalizedX, y_values, w, b);
+    for (let j = 0; j < n; j++) {
+      w[j] -= learningRate * dj_dw[j];
+    }
+    b -= learningRate * dj_db;
   }
 
   updateChart(costs);
 }
 
 function updateChart(costHistory) {
-  const ctx = document.getElementById('costChart').getContext('2d');
+  const ctx = document.getElementById("costChart").getContext("2d");
   const data = {
     labels: costHistory.map((_, i) => i + 1),
     datasets: [
       {
-        label: 'Cost (MSE)',
+        label: "Cost (MSE)",
         data: costHistory,
         fill: false,
-        borderColor: 'rgb(75, 192, 192)',
+        borderColor: "rgb(75, 192, 192)",
         tension: 0.1,
       },
     ],
@@ -68,15 +69,7 @@ function updateChart(costHistory) {
   if (chart) {
     chart.destroy();
   }
-  chart = new Chart(ctx, { type: 'line', data });
+  chart = new Chart(ctx, { type: "line", data });
 }
 
-document.getElementById('runButton').addEventListener('click', runGradientDescent);
-document.getElementById('dataset-select').addEventListener('change', () => {
-  const key = document.getElementById('dataset-select').value;
-  ({ x: X_values, y: y_values } = datasets[key]);
-  updateDataInfo();
-});
-
-// Initialize display
-updateDataInfo();
+document.getElementById("runButton").addEventListener("click", train);

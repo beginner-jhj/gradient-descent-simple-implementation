@@ -1,33 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>Gradient Descent Visualizer</title>
   <link rel="stylesheet" href="./styles.css">
 </head>
+
 <body>
   <h1>Linear Regression with Gradient Descent</h1>
   <section>
     <p>
-      Linear regression attempts to model the relationship between a feature <em>x</em> and a value <em>y</em> using a line <em>y = wx + b</em>.
-      The <strong>cost function</strong> we minimize is the mean squared error (MSE), the average of squared differences between predicted and actual values.
-      <strong>Gradient descent</strong> iteratively updates <em>w</em> and <em>b</em> in the direction that most reduces this cost.
+      Linear regression attempts to model the relationship between a feature <em>x</em> and a value <em>y</em> using a
+      line <em>y = wx + b</em>.
+      The <strong>cost function</strong> we minimize is the mean squared error (MSE), the average of squared differences
+      between predicted and actual values.
+      <strong>Gradient descent</strong> iteratively updates <em>w</em> and <em>b</em> in the direction that most reduces
+      this cost.
     </p>
   </section>
   <div id="controls">
     <label>Dataset:
       <select id="dataset-select">
-        <option value="study">Hours Studied vs Exam Score</option>
-        <option value="experience">Years of Experience vs Salary</option>
-        <option value="housing">House Size vs Price</option>
+        <option value="Salary_dataset">Salary_dataset</option>
+        <option value="Student_Performance">Student_Performance</option>
       </select>
     </label>
     <label>Learning rate: <input id="learning-rate" type="number" step="0.001" value="0.01"></label>
     <label>Iterations: <input id="iterations" type="number" value="100"></label>
     <button id="runButton">Run</button>
   </div>
-  <pre id="data-info"></pre>
   <canvas id="costChart" width="600" height="400"></canvas>
+  <script src="./node_modules/chart.js/dist/chart.umd.min.js"></script>
   <script type="module" src="./app.js"></script>
+  <script type="module" src="./get-data.js"></script>
+  <script type="module" src="./gradient-descent.js"></script>
+  <script type="module" src="./mse.js"></script>
+  <script type="module" src="./predict.js"></script>
 </body>
+
 </html>
