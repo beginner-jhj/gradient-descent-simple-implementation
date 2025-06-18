@@ -29,3 +29,13 @@ input {
 button {
   margin-left: 10px;
 }
+
+#columns-display {
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+#feature-list {
+  margin-bottom: 10px;
+  font-style: italic;
+}
